@@ -1,6 +1,33 @@
 $(document).ready(function() {
     // Initialize variables for chart
     let similarityGauge = null;
+    let centerTextPlugin = {
+        id: 'centerText',
+        beforeDraw: function(chart) {
+            if (chart.config.type === 'doughnut') {
+                const width = chart.width;
+                const height = chart.height;
+                const ctx = chart.ctx;
+                
+                ctx.restore();
+                const fontSize = (height / 114).toFixed(2);
+                ctx.font = fontSize + "em sans-serif";
+                ctx.textBaseline = "middle";
+                
+                // Use the current value from chart data
+                const value = chart.data.datasets[0].data[0];
+                const text = value.toFixed(1) + "%";
+                const textX = Math.round((width - ctx.measureText(text).width) / 2);
+                const textY = height - (height / 4);
+                
+                ctx.fillStyle = "#fff";
+                ctx.fillText(text, textX, textY);
+                ctx.save();
+            }
+        }
+    };
+    // Register plugin once at initialization
+    Chart.register(centerTextPlugin);
     
     // File input preview handling
     $('#image1-file').change(function() {
@@ -231,31 +258,8 @@ $(document).ready(function() {
             }
         });
         
-        // Add center text for similarity value
-        const centerTextPlugin = {
-            id: 'centerText',
-            beforeDraw: function(chart) {
-                if (chart === similarityGauge) {
-                    const width = chart.width;
-                    const height = chart.height;
-                    const ctx = chart.ctx;
-                    
-                    ctx.restore();
-                    const fontSize = (height / 114).toFixed(2);
-                    ctx.font = fontSize + "em sans-serif";
-                    ctx.textBaseline = "middle";
-                    
-                    const text = similarityValue.toFixed(1) + "%";
-                    const textX = Math.round((width - ctx.measureText(text).width) / 2);
-                    const textY = height - (height / 4);
-                    
-                    ctx.fillStyle = "#fff";
-                    ctx.fillText(text, textX, textY);
-                    ctx.save();
-                }
-            }
-        };
-        Chart.register(centerTextPlugin);
+        // Plugin already registered at initialization
+        // We just need to make sure similarityGauge is updated with the correct value
     }
     
     // Function to get color based on similarity value
